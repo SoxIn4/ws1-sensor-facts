@@ -1,4 +1,10 @@
 ## Introduction
+#### This fork of [munki-facts](https://github.com/munki/munki-facts) gathers sensor names & values before running any additional facts modules. For items that need live data, rather than what the hub has cached from the last sensor run, you can provide fact modules to overwrite the value. It (currently?) has the path to WS1's ManagedInstalls directory hard-coded. 
+
+#### Sensor values that are valid json strings should be added to the ConditionalItems.plist with native data types. Otherwise, the values will be strings.
+
+##### Although I haven't tested it, and it's probably irrelevant and pointless, this version should work as the original did in a straight Munki environment.
+
 
 munki_facts.py is an "admin-provided conditions" script for Munki as described [here.](https://github.com/munki/munki/wiki/Conditional-Items#admin-provided-conditions)
 
