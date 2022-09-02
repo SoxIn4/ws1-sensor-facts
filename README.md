@@ -1,5 +1,7 @@
 ## Introduction
-#### This fork of [munki-facts](https://github.com/munki/munki-facts) gathers sensor names & values before running any additional facts modules. For items that need live data, rather than what the hub has cached from the last sensor run, you can provide fact modules to overwrite the value. It (currently?) has the path to WS1's ManagedInstalls directory hard-coded. 
+#### This fork of [munki-facts](https://github.com/munki/munki-facts) gathers sensor names & values before running any additional facts modules. For items that need live data, rather than what the hub has cached from the last sensor run, you can provide fact modules to overwrite the value. It (currently?) has the path to WS1's ManagedInstalls directory hard-coded.
+
+#### * This is using the default path to MacAdmins Python in the shebang. Because WS1 puts their Python framework for munki inside Application Support, we can't use it there.
 
 #### Sensor values that are valid json strings should be added to the ConditionalItems.plist with native data types. Otherwise, the values will be strings.
 
