@@ -1,12 +1,14 @@
-#!/usr/local/munki/munki-python
+#!/usr/local/bin/managed_python3
 '''Processes python modules in the facts directory and adds the info they
 return to our ConditionalItems.plist'''
 
 from __future__ import absolute_import, print_function
 
 import importlib
+import json
 import os
 import plistlib
+import subprocess
 import sys
 from xml.parsers.expat import ExpatError
 
@@ -20,6 +22,24 @@ def main():
     '''Run all our fact plugins and collect their data'''
     module_dir = os.path.join(os.path.dirname(__file__), 'facts')
     facts = {}
+
+    # Check if running under WS1
+    if 'AirWatch/Data' in module_dir:
+        ws1 = True
+        # Get sensor values from hubcli
+        try:
+            proc = subprocess.Popen(['/usr/local/bin/hubcli', 'sensors', '--list', '--json'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text="UTF-8")
+            values, _ = proc.communicate()
+        except (IOError, OSError):
+            values = None
+
+        if values:
+            for sensor in json.loads(values):
+                try:
+                    value = json.loads(sensor['resultValue'].replace("'", '"'))
+                except ValueError:
+                    value = sensor['resultValue']
+                facts.update({sensor['name']: value})
 
     # find all the .py files in the 'facts' dir
     fact_files = [
@@ -47,12 +67,17 @@ def main():
         for key, value in facts.items():
             if value is None:
                 facts[key] = ''
-        # Read the location of the ManagedInstallDir from ManagedInstall.plist
-        bundle_id = 'ManagedInstalls'
-        pref_name = 'ManagedInstallDir'
-        managedinstalldir = CFPreferencesCopyAppValue(pref_name, bundle_id)
+
+        # If running under ws1, set managedinstalldir
+        if ws1:
+            managedinstalldir = '/Library/Application Support/AirWatch/Data/Munki/Managed Installs'
+        else:
+            # Read the location of the ManagedInstallDir from ManagedInstall.plist
+            bundle_id = 'ManagedInstalls'
+            pref_name = 'ManagedInstallDir'
+            managedinstalldir = CFPreferencesCopyAppValue(pref_name, bundle_id)
         conditionalitemspath = os.path.join(
-            managedinstalldir, 'ConditionalItems.plist')
+                managedinstalldir, 'ConditionalItems.plist')
 
         conditional_items = {}
         # read the current conditional items
